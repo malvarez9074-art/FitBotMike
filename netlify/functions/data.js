@@ -1,7 +1,11 @@
 const { getStore } = require("@netlify/blobs");
 
 exports.handler = async (event) => {
-  const store = getStore("finbot");
+  const store = getStore({
+    name: "finbot",
+    siteID: process.env.NETLIFY_SITE_ID,
+    token: process.env.NETLIFY_AUTH_TOKEN,
+  });
 
   if (event.httpMethod === "GET") {
     try {
@@ -9,13 +13,13 @@ exports.handler = async (event) => {
       const hist = await store.get("history", { type: "json" });
       return {
         statusCode: 200,
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
         body: JSON.stringify({ txs: txs || [], hist: hist || [] })
       };
-    } catch {
+    } catch(e) {
       return {
         statusCode: 200,
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
         body: JSON.stringify({ txs: [], hist: [] })
       };
     }
@@ -28,12 +32,13 @@ exports.handler = async (event) => {
       if (body.hist !== undefined) await store.setJSON("history", body.hist);
       return {
         statusCode: 200,
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
         body: JSON.stringify({ ok: true })
       };
-    } catch (e) {
+    } catch(e) {
       return {
         statusCode: 500,
+        headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
         body: JSON.stringify({ ok: false, error: e.message })
       };
     }
