@@ -264,7 +264,7 @@ async function initStorage(){
   }
   try{
     const res=await fetch('/.netlify/functions/data');
-    if(res.ok){const d=await res.json();txs=d.txs||[];hist=d.hist||[];}
+    if(res.ok){const d=await res.json();txs=d.txs||[];hist=d.hist||[];updateAll();}
   }catch{txs=[];hist=[];}
   updateAll();
   document.getElementById('loading').style.display='none';
