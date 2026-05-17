@@ -263,7 +263,7 @@ async function initStorage(){
     return;
   }
   try{
-    const res=await fetch('/api/data');
+    const res=await fetch('/.netlify/functions/data');
     if(res.ok){const d=await res.json();txs=d.txs||[];hist=d.hist||[];}
   }catch{txs=[];hist=[];}
   updateAll();
@@ -281,7 +281,7 @@ function setSaveState(s){
 async function saveData(){
   setSaveState('saving');
   try{
-    await fetch('/api/data',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({txs,hist:hist.slice(-30)})});
+    await fetch('/.netlify/functions/data',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({txs,hist:hist.slice(-30)})});
     setSaveState('saved');
   }catch{setSaveState('');}
 }
