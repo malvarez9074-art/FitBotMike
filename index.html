@@ -218,14 +218,25 @@ textarea::placeholder{color:var(--muted);}
 
   <div class="scroll-panel" id="panel-resumen">
     <div class="grid2">
-      <div class="card"><div class="card-title">💳 Amex</div><div class="stat-val blue" id="r-amex">$0</div><div class="stat-sub" id="r-amex-n">0 compras</div></div>
-      <div class="card"><div class="card-title">💵 Efectivo</div><div class="stat-val amber" id="r-cash">$0</div><div class="stat-sub" id="r-cash-n">0 pagos</div></div>
       <div class="card"><div class="card-title">📈 Ingresos</div><div class="stat-val green" id="r-inc">$0</div><div class="stat-sub" id="r-inc-n">0 conceptos</div></div>
       <div class="card"><div class="card-title">💰 Saldo libre</div><div class="stat-val green" id="r-bal">$0</div><div class="stat-sub">disponible</div></div>
     </div>
-    <div class="sec-title">Amex por categoría</div>
-    <div id="r-amex-cats"><div class="empty">Sin gastos Amex aún</div></div>
-    <div class="sec-title">Efectivo por categoría</div>
+
+    <div class="sec-title">💳 Amex — Corte anterior <span id="r-amex-prev-period" style="font-size:10px;color:var(--muted);font-family:sans-serif;font-weight:400;"></span></div>
+    <div class="grid2">
+      <div class="card"><div class="card-title">Total gastado</div><div class="stat-val blue" id="r-amex-prev">$0</div><div class="stat-sub" id="r-amex-prev-n">0 compras</div></div>
+      <div class="card"><div class="card-title">Fecha de pago</div><div class="stat-val red" id="r-amex-prev-pay">—</div><div class="stat-sub">próximo pago</div></div>
+    </div>
+    <div id="r-amex-prev-cats"><div class="empty">Sin gastos del corte anterior</div></div>
+
+    <div class="sec-title">💳 Amex — Corte en curso <span id="r-amex-cur-period" style="font-size:10px;color:var(--muted);font-family:sans-serif;font-weight:400;"></span></div>
+    <div class="grid2">
+      <div class="card"><div class="card-title">Acumulado</div><div class="stat-val blue" id="r-amex-cur">$0</div><div class="stat-sub" id="r-amex-cur-n">0 compras</div></div>
+      <div class="card"><div class="card-title">Días al corte</div><div class="stat-val amber" id="r-amex-days">0</div><div class="stat-sub">días restantes</div></div>
+    </div>
+    <div id="r-amex-cur-cats"><div class="empty">Sin gastos del corte en curso</div></div>
+
+    <div class="sec-title">💵 Efectivo por categoría</div>
     <div id="r-cash-cats"><div class="empty">Sin gastos en efectivo aún</div></div>
   </div>
 
@@ -263,8 +274,8 @@ async function initStorage(){
     return;
   }
   try{
-    const res=await fetch('/.netlify/functions/data');
-    if(res.ok){const d=await res.json();txs=d.txs||[];hist=d.hist||[];updateAll();}
+    const res=await fetch('/api/data');
+    if(res.ok){const d=await res.json();txs=d.txs||[];hist=d.hist||[];}
   }catch{txs=[];hist=[];}
   updateAll();
   document.getElementById('loading').style.display='none';
@@ -281,7 +292,7 @@ function setSaveState(s){
 async function saveData(){
   setSaveState('saving');
   try{
-    await fetch('/.netlify/functions/data',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({txs,hist:hist.slice(-30)})});
+    await fetch('/api/data',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({txs,hist:hist.slice(-30)})});
     setSaveState('saved');
   }catch{setSaveState('');}
 }
@@ -306,20 +317,42 @@ function sysPrompt(){
   });
   const famSum=Object.entries(persons).map(([n,v])=>`${n}: debe $${Math.max(0,v.spent-v.paid).toFixed(2)}`).join(', ')||'Ninguno';
   const recent=txs.slice(-8).map(t=>`${t.type==='income'?'+':t.type==='family_payment'?'[cobré]':'-'}$${t.amount}[${t.category}][${t.method||'-'}]${t.familyMember?'['+t.familyMember+']':''}`).join(' | ')||'Ninguno';
-  return `Eres FinBot, asistente de finanzas en México. Responde SOLO con JSON válido, sin texto extra ni markdown:
-{"message":"respuesta breve y amigable","transaction":{"type":"expense"|"income"|"family_payment"|null,"amount":número|null,"description":"texto corto"|null,"category":"categoría"|null,"method":"amex"|"cash"|"transfer"|null,"familyMember":"Nombre"|null}}
-ESTADO ACTUAL: Amex=$${amexE.toFixed(2)}, Efectivo=$${cashE.toFixed(2)}, Ingresos=$${inc.toFixed(2)}, Saldo=$${bal.toFixed(2)}
+  // Amex period detection: cut day is 12
+  const now = new Date();
+  const cutDay = 12;
+  const curMonth = now.getMonth();
+  const curYear = now.getFullYear();
+  // Current period: day 12 of this month to day 11 of next month
+  const curPeriodStart = new Date(curYear, curMonth, cutDay);
+  const prevPeriodStart = new Date(curYear, curMonth - 1, cutDay);
+  const isPrevPeriod = (dateStr) => {
+    // dateStr format: "17-may" — parse it
+    try {
+      const months = {ene:0,feb:1,mar:2,abr:3,may:4,jun:5,jul:6,ago:7,sep:8,oct:9,nov:10,dic:11};
+      const [d, m] = dateStr.split('-');
+      const txDate = new Date(curYear, months[m.toLowerCase()], parseInt(d));
+      return txDate < curPeriodStart;
+    } catch { return false; }
+  };
+  const amexPrev = txs.filter(t=>t.method==='amex'&&t.type==='expense'&&isPrevPeriod(t.date||'')).reduce((s,t)=>s+t.amount,0);
+  const amexCur = txs.filter(t=>t.method==='amex'&&t.type==='expense'&&!isPrevPeriod(t.date||'')).reduce((s,t)=>s+t.amount,0);
+  const daysToNext = 11 - now.getDate() + (now.getDate() > 11 ? 30 : 0);
+
+  return `Eres FinBot, asistente de finanzas en México. El corte de la Amex es el día 12 de cada mes. HOY ES ${now.toLocaleDateString('es-MX')}. Responde SOLO con JSON válido, sin texto extra ni markdown:
+{"message":"respuesta breve y amigable","transaction":{"type":"expense"|"income"|"family_payment"|null,"amount":número|null,"description":"texto corto"|null,"category":"categoría"|null,"method":"amex"|"cash"|"transfer"|null,"familyMember":"Nombre"|null,"amexPeriod":"prev"|"cur"|null}}
+ESTADO: Amex corte anterior=$${amexPrev.toFixed(2)}, Amex corte actual=$${amexCur.toFixed(2)}, Efectivo=$${cashE.toFixed(2)}, Ingresos=$${inc.toFixed(2)}, Saldo=$${bal.toFixed(2)}
 FAMILIARES: ${famSum}
 RECIENTES: ${recent}
 REGLAS:
 - "amex","tarjeta","crédito" → method:"amex"
-- "efectivo","cash" → method:"cash"  
+- "efectivo","cash" → method:"cash"
 - "transferencia","spei","depósito" → method:"transfer"
-- "Le compré a [Nombre]" / "compré para [Nombre]" → type:"expense", category:"Compras Familiares", familyMember:"Nombre"
-- "[Nombre] me pagó" / "[Nombre] me dio" → type:"family_payment", familyMember:"Nombre", category:"Reembolso Familiar", method:null
+- Para gastos Amex: si la fecha del gasto es ANTES del día 12 del mes actual → amexPeriod:"prev". Si es del día 12 en adelante → amexPeriod:"cur". Si no se menciona fecha, usa la fecha de hoy para decidir.
+- "Le compré a [Nombre]" → type:"expense", category:"Compras Familiares", familyMember:"Nombre"
+- "[Nombre] me pagó" → type:"family_payment", familyMember:"Nombre", category:"Reembolso Familiar", method:null
 - salario/quincena/finiquito → type:"income", method:null
 - sin movimiento → transaction:null
-- Montos siempre positivos. Sé muy breve y usa emojis ocasionalmente.
+- Montos siempre positivos. Sé muy breve.
 - Categorías válidas: Comida, Restaurante, Supermercado, Gasolina, Transporte, Uber, Entretenimiento, Salud, Gym, Ropa, Hogar, Servicios, Suscripciones, Trabajo, Compras Familiares, Reembolso Familiar, Salario, Finiquito, Otro`;
 }
 
@@ -359,7 +392,8 @@ function initials(n){return n.trim().split(/\s+/).map(w=>w[0]).join('').substrin
 
 function addTx(t){
   const today=new Date().toLocaleDateString('es-MX',{day:'2-digit',month:'short'});
-  txs.unshift({...t,date:today,id:Date.now()});
+  const amexPeriod = t.method==='amex' ? (t.amexPeriod||'cur') : null;
+  txs.unshift({...t,date:today,id:Date.now(),amexPeriod});
   updateAll();scheduleSave();
 }
 
@@ -371,17 +405,46 @@ function updateAll(){
   const bal=inc-amexE-cashE-otherE;
   const nb=document.getElementById('nav-bal');
   nb.textContent=fmt(bal);nb.className='nav-bal-val '+(bal>=0?'pos':'neg');
-  const amexTxs=txs.filter(t=>t.method==='amex'&&t.type==='expense');
+  const now2 = new Date();
+  const cutDay2 = 12;
+  const months2 = {ene:0,feb:1,mar:2,abr:3,may:4,jun:5,jul:6,ago:7,sep:8,oct:9,nov:10,dic:11};
+  const parseTxDate = (dateStr) => {
+    try {
+      const [d,m] = (dateStr||'').split('-');
+      return new Date(now2.getFullYear(), months2[m?.toLowerCase()]??now2.getMonth(), parseInt(d)||1);
+    } catch { return now2; }
+  };
+  const curPeriodStart2 = new Date(now2.getFullYear(), now2.getMonth(), cutDay2);
+  const amexAllTxs = txs.filter(t=>t.method==='amex'&&t.type==='expense');
+  const amexPrevTxs = amexAllTxs.filter(t=>(t.amexPeriod==='prev')||(t.amexPeriod!=='cur'&&parseTxDate(t.date)<curPeriodStart2));
+  const amexCurTxs = amexAllTxs.filter(t=>(t.amexPeriod==='cur')||(t.amexPeriod!=='prev'&&parseTxDate(t.date)>=curPeriodStart2));
+  const amexPrevTotal = amexPrevTxs.reduce((s,t)=>s+t.amount,0);
+  const amexCurTotal = amexCurTxs.reduce((s,t)=>s+t.amount,0);
   const cashTxs=txs.filter(t=>t.method==='cash'&&t.type==='expense');
   const incTxs=txs.filter(t=>t.type==='income');
-  document.getElementById('r-amex').textContent=fmt(amexE);
-  document.getElementById('r-amex-n').textContent=amexTxs.length+' compras';
-  document.getElementById('r-cash').textContent=fmt(cashE);
-  document.getElementById('r-cash-n').textContent=cashTxs.length+' pagos';
   document.getElementById('r-inc').textContent=fmt(inc);
   document.getElementById('r-inc-n').textContent=incTxs.length+' conceptos';
   const rb=document.getElementById('r-bal');
   rb.textContent=fmt(bal);rb.className='stat-val '+(bal>=0?'green':'red');
+
+  // Amex prev period
+  const prevMonthNames=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  const prevStart = new Date(now2.getFullYear(), now2.getMonth()-1, cutDay2);
+  const prevEnd = new Date(now2.getFullYear(), now2.getMonth(), cutDay2-1);
+  document.getElementById('r-amex-prev-period').textContent = `(${cutDay2} ${prevMonthNames[prevStart.getMonth()]} – ${cutDay2-1} ${prevMonthNames[prevEnd.getMonth()]})`;
+  document.getElementById('r-amex-prev').textContent=fmt(amexPrevTotal);
+  document.getElementById('r-amex-prev-n').textContent=amexPrevTxs.length+' compras';
+  document.getElementById('r-amex-prev-pay').textContent='Pagar el 30';
+
+  // Amex cur period
+  const curEnd = new Date(now2.getFullYear(), now2.getMonth()+1, cutDay2-1);
+  document.getElementById('r-amex-cur-period').textContent=`(${cutDay2} ${prevMonthNames[now2.getMonth()]} – ${cutDay2-1} ${prevMonthNames[curEnd.getMonth()]})`;
+  document.getElementById('r-amex-cur').textContent=fmt(amexCurTotal);
+  document.getElementById('r-amex-cur-n').textContent=amexCurTxs.length+' compras';
+  const daysLeft = cutDay2 - 1 + (now2.getDate() >= cutDay2 ? new Date(now2.getFullYear(), now2.getMonth()+1, 0).getDate() - now2.getDate() + cutDay2 - 1 : cutDay2 - 1 - now2.getDate());
+  const realDaysLeft = Math.max(0, now2.getDate() < cutDay2 ? cutDay2 - 1 - now2.getDate() : new Date(now2.getFullYear(), now2.getMonth()+1, 0).getDate() - now2.getDate() + cutDay2 - 1);
+  document.getElementById('r-amex-days').textContent=realDaysLeft;
+
   function buildCats(arr,color,tcls,tlbl){
     const map={};
     arr.forEach(t=>{if(!map[t.category])map[t.category]=[];map[t.category].push(t);});
@@ -391,7 +454,8 @@ function updateAll(){
       return `<div class="ditem"><div class="ditem-left"><div class="ditem-desc">${ICONS[cat]||'📦'} ${cat}</div><div class="ditem-meta">${items.length} transacciones · <span class="tag ${tcls}" style="font-size:9px">${tlbl}</span></div></div><div class="ditem-amt" style="color:${color}">${fmt(tot)}</div></div>`;
     }).join(''):'<div class="empty">Sin registros</div>';
   }
-  document.getElementById('r-amex-cats').innerHTML=buildCats(amexTxs,'var(--blue)','amex','💳 Amex');
+  document.getElementById('r-amex-prev-cats').innerHTML=buildCats(amexPrevTxs,'var(--blue)','amex','💳 Corte anterior');
+  document.getElementById('r-amex-cur-cats').innerHTML=buildCats(amexCurTxs,'var(--blue)','amex','💳 Corte en curso');
   document.getElementById('r-cash-cats').innerHTML=buildCats(cashTxs,'var(--amber)','cash','💵 Efectivo');
   const persons={};
   txs.filter(t=>t.familyMember).forEach(t=>{
@@ -482,4 +546,3 @@ if(geminiKey){
 </script>
 </body>
 </html>
-
