@@ -7,7 +7,7 @@
 <title>FinBot</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#0c0e12;--s1:#13161d;--s2:#1a1e28;--s3:#222737;--border:#2c3248;--border2:#3a4160;--text:#e4e8f4;--muted:#636d8a;--green:#00d68f;--green-d:rgba(0,214,143,.13);--red:#ff5c6a;--blue:#4d8eff;--blue-d:rgba(77,142,255,.13);--amber:#ffb340;--amber-d:rgba(255,179,64,.13);--purple:#a78bfa;--purple-d:rgba(167,139,250,.13);}
+:root{--bg:#0c0e12;--s1:#13161d;--s2:#1a1e28;--s3:#222737;--border:#2c3248;--border2:#3a4160;--text:#e4e8f4;--muted:#636d8a;--green:#00d68f;--green-d:rgba(0,214,143,.13);--red:#ff5c6a;--red-d:rgba(255,92,106,.13);--blue:#4d8eff;--blue-d:rgba(77,142,255,.13);--amber:#ffb340;--amber-d:rgba(255,179,64,.13);--purple:#a78bfa;--purple-d:rgba(167,139,250,.13);}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 html,body{height:100%;overflow:hidden;}
 body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;display:flex;flex-direction:column;max-width:480px;margin:0 auto;}
@@ -25,8 +25,6 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;dis
 .setup-input:focus{border-color:var(--green);}
 .setup-input::placeholder{color:var(--muted);}
 .setup-btn{width:100%;max-width:340px;background:var(--green);border:none;border-radius:11px;padding:13px;color:#0c0e12;font-family:'Syne',sans-serif;font-weight:700;font-size:15px;cursor:pointer;}
-.setup-btn:active{opacity:.85;}
-.setup-note{font-size:10px;color:var(--muted);text-align:center;max-width:320px;line-height:1.6;}
 
 /* LOADING */
 #loading{position:fixed;inset:0;background:var(--bg);display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px;z-index:99;}
@@ -43,6 +41,7 @@ nav{background:var(--s1);border-bottom:1px solid var(--border);display:flex;alig
 .save-ind{font-size:10px;color:var(--muted);display:flex;align-items:center;gap:4px;}
 .save-ind.saving{color:var(--amber);}
 .save-ind.saved{color:var(--green);}
+.save-ind.error{color:var(--red);}
 .save-dot{width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0;}
 .nav-bal-wrap{display:flex;flex-direction:column;align-items:flex-end;}
 .nav-bal-label{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;}
@@ -60,7 +59,7 @@ nav{background:var(--s1);border-bottom:1px solid var(--border);display:flex;alig
 .messages{flex:1;overflow-y:auto;padding:12px 14px;display:flex;flex-direction:column;gap:9px;}
 .messages::-webkit-scrollbar{width:2px;}
 .messages::-webkit-scrollbar-thumb{background:var(--border);}
-.msg{display:flex;gap:7px;max-width:90%;animation:fu .2s ease;}
+.msg{display:flex;gap:7px;max-width:92%;animation:fu .2s ease;}
 @keyframes fu{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
 .msg.user{align-self:flex-end;flex-direction:row-reverse;}
 .msg.bot{align-self:flex-start;}
@@ -70,6 +69,7 @@ nav{background:var(--s1);border-bottom:1px solid var(--border);display:flex;alig
 .bubble{padding:8px 12px;border-radius:13px;font-size:13px;line-height:1.5;word-break:break-word;}
 .msg.user .bubble{background:var(--s3);border:1px solid var(--border2);border-bottom-right-radius:3px;}
 .msg.bot .bubble{background:var(--s2);border:1px solid var(--border);border-bottom-left-radius:3px;}
+
 .tx-card{margin-top:7px;background:var(--s1);border:1px solid var(--border);border-radius:9px;padding:9px 11px;display:flex;align-items:center;justify-content:space-between;gap:8px;}
 .tx-left{display:flex;flex-direction:column;gap:3px;flex:1;min-width:0;}
 .tx-desc{font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -81,6 +81,18 @@ nav{background:var(--s1);border-bottom:1px solid var(--border);display:flex;alig
 .tag.fam{background:var(--purple-d);color:var(--purple);}
 .tag.cat{background:var(--s3);color:var(--muted);}
 .tx-amt{font-family:'Syne',sans-serif;font-size:15px;font-weight:800;white-space:nowrap;}
+
+/* METHOD PICKER */
+.method-picker{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;}
+.method-btn{background:var(--s3);border:1px solid var(--border2);color:var(--text);font-size:12px;font-weight:500;padding:7px 14px;border-radius:20px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;}
+.method-btn:hover,.method-btn:active{border-color:var(--green);color:var(--green);}
+.method-btn.amex-btn{border-color:var(--blue);color:var(--blue);}
+.method-btn.cash-btn{border-color:var(--amber);color:var(--amber);}
+
+/* SHEET ERROR BANNER */
+.sheet-error{background:var(--red-d);border:1px solid var(--red);border-radius:10px;padding:10px 12px;margin-top:8px;font-size:12px;display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.sheet-retry{background:var(--red);border:none;color:#fff;font-size:11px;font-weight:600;padding:5px 10px;border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;}
+
 .sugs{padding:8px 14px;display:flex;gap:6px;overflow-x:auto;flex-shrink:0;scrollbar-width:none;}
 .sugs::-webkit-scrollbar{display:none;}
 .sug{background:var(--s2);border:1px solid var(--border);color:var(--muted);font-size:11px;padding:5px 10px;border-radius:12px;cursor:pointer;white-space:nowrap;font-family:'DM Sans',sans-serif;flex-shrink:0;}
@@ -93,10 +105,28 @@ textarea::placeholder{color:var(--muted);}
 .send-btn{width:36px;height:36px;border-radius:9px;background:var(--green);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .send-btn:active{opacity:.8;}
 .send-btn svg{width:15px;height:15px;fill:#0c0e12;}
+
+/* RESUMEN */
 .scroll-panel{flex:1;display:none;overflow-y:auto;padding:14px 14px 80px;}
 .scroll-panel.active{display:block;}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
-.card{background:var(--s2);border:1px solid var(--border);border-radius:12px;padding:12px;}
+.scroll-panel::-webkit-scrollbar{width:2px;}
+.scroll-panel::-webkit-scrollbar-thumb{background:var(--border);}
+
+/* DETAIL VIEW */
+.detail-view{display:none;flex:1;flex-direction:column;overflow:hidden;}
+.detail-view.active{display:flex;}
+.detail-header{padding:12px 14px;background:var(--s1);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.back-btn{background:var(--s2);border:1px solid var(--border);color:var(--text);font-size:12px;font-weight:500;padding:6px 12px;border-radius:20px;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.back-btn:active{opacity:.8;}
+.detail-title{font-family:'Syne',sans-serif;font-weight:700;font-size:15px;}
+.detail-body{flex:1;overflow-y:auto;padding:14px 14px 80px;}
+.detail-body::-webkit-scrollbar{width:2px;}
+.detail-body::-webkit-scrollbar-thumb{background:var(--border);}
+
+.summary-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
+.sum-card{background:var(--s2);border:1px solid var(--border);border-radius:12px;padding:12px;cursor:pointer;transition:border-color .15s;position:relative;}
+.sum-card:active{border-color:var(--green);}
+.sum-card-clickable::after{content:'›';position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:18px;}
 .card-title{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px;}
 .stat-val{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;}
 .stat-val.green{color:var(--green);}
@@ -105,12 +135,27 @@ textarea::placeholder{color:var(--muted);}
 .stat-val.amber{color:var(--amber);}
 .stat-val.purple{color:var(--purple);}
 .stat-sub{font-size:10px;color:var(--muted);margin-top:3px;}
+
 .sec-title{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;margin:14px 0 8px;}
+.month-section{background:var(--s2);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:10px;}
+.month-header{padding:12px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.month-label{font-size:12px;font-weight:500;}
+.month-amt{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
+
+.tx-row{display:flex;align-items:center;justify-content:space-between;padding:9px 14px;border-bottom:1px solid var(--border);gap:8px;}
+.tx-row:last-child{border-bottom:none;}
+.tx-row-left{flex:1;min-width:0;}
+.tx-row-desc{font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.tx-row-meta{font-size:10px;color:var(--muted);margin-top:2px;display:flex;gap:6px;flex-wrap:wrap;}
+.tx-row-amt{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;white-space:nowrap;}
+
 .ditem{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 11px;background:var(--s1);border:1px solid var(--border);border-radius:9px;margin-bottom:6px;}
 .ditem-left{flex:1;min-width:0;}
 .ditem-desc{font-size:12px;font-weight:500;}
 .ditem-meta{font-size:10px;color:var(--muted);margin-top:2px;}
 .ditem-amt{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;white-space:nowrap;}
+
 .person-card{background:var(--s2);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:10px;}
 .person-header{display:flex;align-items:center;justify-content:space-between;padding:11px 13px;border-bottom:1px solid var(--border);}
 .person-info{display:flex;align-items:center;gap:9px;}
@@ -127,6 +172,7 @@ textarea::placeholder{color:var(--muted);}
 .ptx:last-child{border-bottom:none;}
 .ptx-m{font-size:10px;color:var(--muted);}
 .ptx-a{font-family:'Syne',sans-serif;font-weight:700;font-size:12px;white-space:nowrap;}
+
 .empty{text-align:center;color:var(--muted);font-size:12px;padding:20px;line-height:1.7;}
 .ei{font-size:24px;margin-bottom:6px;}
 .typing{display:flex;gap:4px;align-items:center;}
@@ -134,6 +180,10 @@ textarea::placeholder{color:var(--muted);}
 .typing span:nth-child(2){animation-delay:.2s;}
 .typing span:nth-child(3){animation-delay:.4s;}
 @keyframes bl{0%,80%,100%{opacity:.3;transform:scale(1)}40%{opacity:1;transform:scale(1.2)}}
+
+.total-bar{background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:10px 14px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;}
+.total-bar-label{font-size:12px;color:var(--muted);}
+.total-bar-val{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;}
 </style>
 </head>
 <body>
@@ -141,18 +191,12 @@ textarea::placeholder{color:var(--muted);}
 <div id="setup">
   <div class="si">FB</div>
   <h2>Bienvenido a FinBot</h2>
-  <p>Solo necesitas tu Gemini API Key — es gratis y solo se configura una vez.</p>
-
+  <p>Solo necesitas tu Gemini API Key gratuita.</p>
   <div class="setup-block">
-    <div class="setup-label">
-      <b>Gemini API Key</b> — IA completamente gratis<br>
-      Entra a <a href="https://aistudio.google.com/app/apikey" target="_blank">aistudio.google.com</a> → <b>Get API key</b> → <b>Create API key</b>
-    </div>
+    <div class="setup-label"><b>Gemini API Key</b> — <a href="https://aistudio.google.com/app/apikey" target="_blank">aistudio.google.com → Get API key</a></div>
     <input class="setup-input" type="password" id="gemini-input" placeholder="AIzaSy..."/>
   </div>
-
   <button class="setup-btn" onclick="saveKey()">Guardar y empezar →</button>
-  <p class="setup-note">Tu clave se guarda solo en este dispositivo. Tus datos se guardan automáticamente en el servidor.</p>
 </div>
 
 <div id="loading">
@@ -169,7 +213,7 @@ textarea::placeholder{color:var(--muted);}
   <div class="nav-right">
     <div class="save-ind" id="save-ind"><div class="save-dot"></div><span id="save-txt">listo</span></div>
     <div class="nav-bal-wrap">
-      <div class="nav-bal-label">Saldo</div>
+      <div class="nav-bal-label">Mes actual</div>
       <div class="nav-bal-val pos" id="nav-bal">$0.00</div>
     </div>
   </div>
@@ -182,12 +226,14 @@ textarea::placeholder{color:var(--muted);}
 </div>
 
 <div class="panels">
+
+  <!-- CHAT -->
   <div class="chat-wrap active" id="panel-chat">
     <div class="messages" id="messages">
       <div class="msg bot">
         <div class="av b">🤖</div>
         <div class="bubble">
-          ¡Listo! Tus datos se guardan automáticamente 💾<br><br>
+          ¡Hola! Registra tus movimientos 💾<br><br>
           <b>Gastos:</b><br>
           • <em>"Gasté 350 en la Amex en comida"</em><br>
           • <em>"Pagué 120 en efectivo de uber"</em><br><br>
@@ -204,7 +250,7 @@ textarea::placeholder{color:var(--muted);}
       <button class="sug" onclick="qs('Pagué 150 en efectivo de gasolina')">💵 Cash gasolina</button>
       <button class="sug" onclick="qs('Le compré 1400 a Ana en la Amex')">👩 Compra a Ana</button>
       <button class="sug" onclick="qs('Ana me pagó 500')">✅ Cobré a Ana</button>
-      <button class="sug" onclick="qs('¿Cuánto me debe cada familiar?')">📋 Saldos</button>
+      <button class="sug" onclick="qs('¿Cuánto llevo este mes?')">📋 Resumen mes</button>
     </div>
     <div class="input-area">
       <div class="iw">
@@ -216,44 +262,91 @@ textarea::placeholder{color:var(--muted);}
     </div>
   </div>
 
+  <!-- RESUMEN -->
   <div class="scroll-panel" id="panel-resumen">
-    <div class="grid2">
-      <div class="card"><div class="card-title">📈 Ingresos</div><div class="stat-val green" id="r-inc">$0</div><div class="stat-sub" id="r-inc-n">0 conceptos</div></div>
-      <div class="card"><div class="card-title">💰 Saldo libre</div><div class="stat-val green" id="r-bal">$0</div><div class="stat-sub">disponible</div></div>
-    </div>
+    <div id="resumen-main">
+      <div class="sec-title">📅 Mes en curso</div>
+      <div class="summary-grid">
+        <div class="sum-card sum-card-clickable" onclick="showDetail('ingresos')">
+          <div class="card-title">📈 Ingresos</div>
+          <div class="stat-val green" id="r-inc-mes">$0</div>
+          <div class="stat-sub" id="r-inc-mes-n">0 conceptos</div>
+        </div>
+        <div class="sum-card sum-card-clickable" onclick="showDetail('egresos-mes')">
+          <div class="card-title">💸 Mis gastos</div>
+          <div class="stat-val red" id="r-ego-mes">$0</div>
+          <div class="stat-sub" id="r-ego-mes-n">este mes</div>
+        </div>
+        <div class="sum-card sum-card-clickable" onclick="showDetail('fam-mes')">
+          <div class="card-title">👨‍👩‍👧 Gastos fam.</div>
+          <div class="stat-val purple" id="r-fam-mes">$0</div>
+          <div class="stat-sub">compras familiares</div>
+        </div>
+        <div class="sum-card sum-card-clickable" onclick="showDetail('compromisos')">
+          <div class="card-title">📌 Compromisos</div>
+          <div class="stat-val amber" id="r-comp-mes">$0</div>
+          <div class="stat-sub">pendiente de pagar</div>
+        </div>
+      </div>
 
-    <div class="sec-title">💳 Amex — Corte anterior <span id="r-amex-prev-period" style="font-size:10px;color:var(--muted);font-family:sans-serif;font-weight:400;"></span></div>
-    <div class="grid2">
-      <div class="card"><div class="card-title">Total gastado</div><div class="stat-val blue" id="r-amex-prev">$0</div><div class="stat-sub" id="r-amex-prev-n">0 compras</div></div>
-      <div class="card"><div class="card-title">Fecha de pago</div><div class="stat-val red" id="r-amex-prev-pay">—</div><div class="stat-sub">próximo pago</div></div>
-    </div>
-    <div id="r-amex-prev-cats"><div class="empty">Sin gastos del corte anterior</div></div>
+      <div class="sec-title">💳 Amex</div>
+      <div class="summary-grid">
+        <div class="sum-card sum-card-clickable" onclick="showDetail('amex-prev')">
+          <div class="card-title">Corte anterior</div>
+          <div class="stat-val blue" id="r-amex-prev">$0</div>
+          <div class="stat-sub" id="r-amex-prev-lbl">pago el 30</div>
+        </div>
+        <div class="sum-card sum-card-clickable" onclick="showDetail('amex-cur')">
+          <div class="card-title">Corte en curso</div>
+          <div class="stat-val blue" id="r-amex-cur">$0</div>
+          <div class="stat-sub" id="r-amex-cur-lbl">días al corte</div>
+        </div>
+      </div>
 
-    <div class="sec-title">💳 Amex — Corte en curso <span id="r-amex-cur-period" style="font-size:10px;color:var(--muted);font-family:sans-serif;font-weight:400;"></span></div>
-    <div class="grid2">
-      <div class="card"><div class="card-title">Acumulado</div><div class="stat-val blue" id="r-amex-cur">$0</div><div class="stat-sub" id="r-amex-cur-n">0 compras</div></div>
-      <div class="card"><div class="card-title">Días al corte</div><div class="stat-val amber" id="r-amex-days">0</div><div class="stat-sub">días restantes</div></div>
+      <div class="sec-title">💵 Efectivo</div>
+      <div class="summary-grid">
+        <div class="sum-card sum-card-clickable" onclick="showDetail('efectivo')">
+          <div class="card-title">Total efectivo</div>
+          <div class="stat-val amber" id="r-cash">$0</div>
+          <div class="stat-sub" id="r-cash-n">0 pagos</div>
+        </div>
+        <div class="sum-card">
+          <div class="card-title">💰 Saldo mes</div>
+          <div class="stat-val green" id="r-saldo">$0</div>
+          <div class="stat-sub">ingresos − egresos</div>
+        </div>
+      </div>
     </div>
-    <div id="r-amex-cur-cats"><div class="empty">Sin gastos del corte en curso</div></div>
-
-    <div class="sec-title">💵 Efectivo por categoría</div>
-    <div id="r-cash-cats"><div class="empty">Sin gastos en efectivo aún</div></div>
   </div>
 
+  <!-- DETAIL VIEW (inside resumen panel) -->
+  <div class="detail-view" id="detail-view">
+    <div class="detail-header">
+      <button class="back-btn" onclick="hideDetail()">← Regresar</button>
+      <div class="detail-title" id="detail-title"></div>
+    </div>
+    <div class="detail-body" id="detail-body"></div>
+  </div>
+
+  <!-- FAMILIARES -->
   <div class="scroll-panel" id="panel-familiares">
-    <div class="grid2">
-      <div class="card"><div class="card-title">Total comprado</div><div class="stat-val purple" id="f-total">$0</div><div class="stat-sub">para familiares</div></div>
-      <div class="card"><div class="card-title">Por cobrar</div><div class="stat-val amber" id="f-pending">$0</div><div class="stat-sub">pendiente</div></div>
+    <div class="summary-grid">
+      <div class="sum-card"><div class="card-title">Total comprado</div><div class="stat-val purple" id="f-total">$0</div><div class="stat-sub">para familiares</div></div>
+      <div class="sum-card"><div class="card-title">Por cobrar</div><div class="stat-val amber" id="f-pending">$0</div><div class="stat-sub">pendiente</div></div>
     </div>
     <div class="sec-title">Por persona</div>
     <div id="f-persons"><div class="empty"><div class="ei">👨‍👩‍👧</div>Escribe "Le compré X a [nombre]" para empezar</div></div>
   </div>
+
 </div>
 
 <script>
+const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbyVvXguHbMzxEpadRXi8rh1AuJ9zklnPx8ML22GvkrcJU-SoO-c2LkKg-3GfkgHh64z/exec';
+const NETLIFY_FN = '/.netlify/functions/data';
 let txs=[],hist=[],geminiKey=null,saveTimer=null;
+let pendingMethodTx=null; // stores tx waiting for method selection
 
-const ICONS={"Comida":"🍔","Restaurante":"🍽️","Supermercado":"🛒","Gasolina":"⛽","Transporte":"🚗","Uber":"🚕","Entretenimiento":"🎬","Salud":"💊","Gym":"💪","Ropa":"👕","Hogar":"🏠","Servicios":"⚡","Suscripciones":"📱","Trabajo":"💼","Compras Familiares":"👨‍👩‍👧","Reembolso Familiar":"💸","Salario":"💰","Finiquito":"📄","Otro":"📦"};
+const ICONS={"Comida":"🍔","Restaurante":"🍽️","Supermercado":"🛒","Gasolina":"⛽","Transporte":"🚗","Uber":"🚕","Entretenimiento":"🎬","Salud":"💊","Gym":"💪","Ropa":"👕","Hogar":"🏠","Servicios":"⚡","Suscripciones":"📱","Trabajo":"💼","Compras Familiares":"👨‍👩‍👧","Reembolso Familiar":"💸","Salario":"💰","Finiquito":"📄","Renta":"🏠","Otro":"📦"};
 
 // ── SETUP ─────────────────────────────────────────────────────
 function saveKey(){
@@ -268,195 +361,240 @@ function saveKey(){
 
 async function initStorage(){
   geminiKey=localStorage.getItem('fb_gemini');
-  if(!geminiKey){
-    document.getElementById('loading').style.display='none';
-    document.getElementById('setup').style.display='flex';
-    return;
-  }
+  if(!geminiKey){document.getElementById('loading').style.display='none';document.getElementById('setup').style.display='flex';return;}
   try{
-    const res=await fetch('/api/data');
+    const res=await fetch(NETLIFY_FN);
     if(res.ok){const d=await res.json();txs=d.txs||[];hist=d.hist||[];}
   }catch{txs=[];hist=[];}
   updateAll();
   document.getElementById('loading').style.display='none';
 }
 
-// ── SAVE ──────────────────────────────────────────────────────
-function setSaveState(s){
+// ── SAVE NETLIFY ───────────────────────────────────────────────
+function setSaveState(s,msg){
   const ind=document.getElementById('save-ind');
   const txt=document.getElementById('save-txt');
   ind.className='save-ind '+s;
-  txt.textContent=s==='saving'?'guardando…':s==='saved'?'guardado':'listo';
+  txt.textContent=msg||(s==='saving'?'guardando…':s==='saved'?'guardado':s==='error'?'error al guardar':'listo');
   if(s==='saved')setTimeout(()=>setSaveState(''),2500);
 }
-async function saveData(){
-  setSaveState('saving');
+
+async function saveNetlify(){
   try{
-    await fetch('/api/data',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({txs,hist:hist.slice(-30)})});
-    setSaveState('saved');
-  }catch{setSaveState('');}
+    await fetch(NETLIFY_FN,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({txs,hist:hist.slice(-30)})});
+  }catch(e){throw e;}
 }
+
 function scheduleSave(){
   if(saveTimer)clearTimeout(saveTimer);
-  saveTimer=setTimeout(saveData,1000);
+  saveTimer=setTimeout(async()=>{
+    setSaveState('saving');
+    try{await saveNetlify();setSaveState('saved');}
+    catch{setSaveState('error');}
+  },1000);
 }
 
-// ── GEMINI AI ─────────────────────────────────────────────────
+// ── SAVE SHEETS ────────────────────────────────────────────────
+async function saveToSheets(tx, retryEl){
+  const now=new Date();
+  const fecha=tx.date||now.toLocaleDateString('es-MX',{day:'2-digit',month:'short'});
+  try{
+    let payload={};
+    if(tx.type==='income'){
+      payload={type:'ingreso',fecha,descripcion:tx.description,categoria:tx.category,monto:tx.amount};
+    } else if(tx.type==='family_payment'){
+      payload={type:'familiar',fecha,familiar:tx.familyMember,descripcion:tx.description||'Pago recibido',monto:tx.amount,pagado:true,fechaPago:fecha};
+    } else if(tx.type==='expense'){
+      const esFamiliar=tx.category==='Compras Familiares';
+      payload={type:'egreso',fecha,descripcion:tx.description,categoria:tx.category,metodo:tx.method,monto:tx.amount,quien:esFamiliar?'Familiar':'Yo',familiar:tx.familyMember||'',corteAmex:tx.amexPeriod==='prev'?'Anterior':'En curso'};
+      if(esFamiliar){
+        // Also log to familiares sheet
+        await fetch(SHEETS_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({type:'familiar',fecha,familiar:tx.familyMember,descripcion:tx.description,monto:tx.amount,pagado:false,fechaPago:''})});
+      }
+    }
+    await fetch(SHEETS_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    if(retryEl) retryEl.remove();
+  }catch(e){
+    // Show retry button if not already shown
+    if(!retryEl){
+      showSheetError(tx);
+    }
+  }
+}
+
+function showSheetError(tx){
+  const c=document.getElementById('messages');
+  const d=document.createElement('div');
+  d.className='msg bot';
+  d.innerHTML=`<div class="av b">🤖</div><div class="bubble">⚠️ No se pudo guardar en Google Sheets.<div class="sheet-error"><span>Error al conectar con Sheets</span><button class="sheet-retry" onclick="saveToSheets(${JSON.stringify(tx).replace(/"/g,'&quot;')},this.parentElement.parentElement.parentElement)">Reintentar</button></div></div>`;
+  c.appendChild(d);c.scrollTop=c.scrollHeight;
+}
+
+// ── AI ─────────────────────────────────────────────────────────
 function sysPrompt(){
+  const now=new Date();
+  const mes=now.getMonth();const anio=now.getFullYear();
+  const cutDay=12;
+  const curPeriodStart=new Date(anio,mes,cutDay);
+  const amexPrev=txs.filter(t=>t.method==='amex'&&t.type==='expense'&&t.amexPeriod==='prev').reduce((s,t)=>s+t.amount,0);
+  const amexCur=txs.filter(t=>t.method==='amex'&&t.type==='expense'&&t.amexPeriod!=='prev').reduce((s,t)=>s+t.amount,0);
   const inc=txs.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
-  const amexE=txs.filter(t=>t.method==='amex'&&t.type==='expense').reduce((s,t)=>s+t.amount,0);
   const cashE=txs.filter(t=>t.method==='cash'&&t.type==='expense').reduce((s,t)=>s+t.amount,0);
-  const otherE=txs.filter(t=>t.method==='transfer'&&t.type==='expense').reduce((s,t)=>s+t.amount,0);
-  const bal=inc-amexE-cashE-otherE;
   const persons={};
-  txs.filter(t=>t.familyMember).forEach(t=>{
-    const n=t.familyMember;
-    if(!persons[n])persons[n]={spent:0,paid:0};
-    if(t.type==='expense')persons[n].spent+=t.amount;
-    if(t.type==='family_payment')persons[n].paid+=t.amount;
-  });
+  txs.filter(t=>t.familyMember).forEach(t=>{const n=t.familyMember;if(!persons[n])persons[n]={spent:0,paid:0};if(t.type==='expense')persons[n].spent+=t.amount;if(t.type==='family_payment')persons[n].paid+=t.amount;});
   const famSum=Object.entries(persons).map(([n,v])=>`${n}: debe $${Math.max(0,v.spent-v.paid).toFixed(2)}`).join(', ')||'Ninguno';
   const recent=txs.slice(-8).map(t=>`${t.type==='income'?'+':t.type==='family_payment'?'[cobré]':'-'}$${t.amount}[${t.category}][${t.method||'-'}]${t.familyMember?'['+t.familyMember+']':''}`).join(' | ')||'Ninguno';
-  // Amex period detection: cut day is 12
-  const now = new Date();
-  const cutDay = 12;
-  const curMonth = now.getMonth();
-  const curYear = now.getFullYear();
-  // Current period: day 12 of this month to day 11 of next month
-  const curPeriodStart = new Date(curYear, curMonth, cutDay);
-  const prevPeriodStart = new Date(curYear, curMonth - 1, cutDay);
-  const isPrevPeriod = (dateStr) => {
-    // dateStr format: "17-may" — parse it
-    try {
-      const months = {ene:0,feb:1,mar:2,abr:3,may:4,jun:5,jul:6,ago:7,sep:8,oct:9,nov:10,dic:11};
-      const [d, m] = dateStr.split('-');
-      const txDate = new Date(curYear, months[m.toLowerCase()], parseInt(d));
-      return txDate < curPeriodStart;
-    } catch { return false; }
-  };
-  const amexPrev = txs.filter(t=>t.method==='amex'&&t.type==='expense'&&isPrevPeriod(t.date||'')).reduce((s,t)=>s+t.amount,0);
-  const amexCur = txs.filter(t=>t.method==='amex'&&t.type==='expense'&&!isPrevPeriod(t.date||'')).reduce((s,t)=>s+t.amount,0);
-  const daysToNext = 11 - now.getDate() + (now.getDate() > 11 ? 30 : 0);
 
-  return `Eres FinBot, asistente de finanzas en México. El corte de la Amex es el día 12 de cada mes. HOY ES ${now.toLocaleDateString('es-MX')}. Responde SOLO con JSON válido, sin texto extra ni markdown:
-{"message":"respuesta breve y amigable","transaction":{"type":"expense"|"income"|"family_payment"|null,"amount":número|null,"description":"texto corto"|null,"category":"categoría"|null,"method":"amex"|"cash"|"transfer"|null,"familyMember":"Nombre"|null,"amexPeriod":"prev"|"cur"|null}}
-ESTADO: Amex corte anterior=$${amexPrev.toFixed(2)}, Amex corte actual=$${amexCur.toFixed(2)}, Efectivo=$${cashE.toFixed(2)}, Ingresos=$${inc.toFixed(2)}, Saldo=$${bal.toFixed(2)}
+  return `Eres FinBot, asistente de finanzas en México. HOY: ${now.toLocaleDateString('es-MX')}. Corte Amex: día ${cutDay} de cada mes.
+Responde SOLO JSON válido sin texto extra:
+{"message":"respuesta breve","transaction":{"type":"expense"|"income"|"family_payment"|null,"amount":número|null,"description":"texto"|null,"category":"cat"|null,"method":"amex"|"cash"|"transfer"|"unknown"|null,"familyMember":"Nombre"|null,"amexPeriod":"prev"|"cur"|null,"pendiente":true|false|null},"needsMethod":true|false}
+
+ESTADO: AmexAnterior=$${amexPrev.toFixed(2)}, AmexActual=$${amexCur.toFixed(2)}, Efectivo=$${cashE.toFixed(2)}, Ingresos=$${inc.toFixed(2)}
 FAMILIARES: ${famSum}
 RECIENTES: ${recent}
+
 REGLAS:
-- "amex","tarjeta","crédito" → method:"amex"
-- "efectivo","cash" → method:"cash"
-- "transferencia","spei","depósito" → method:"transfer"
-- Para gastos Amex: si la fecha del gasto es ANTES del día 12 del mes actual → amexPeriod:"prev". Si es del día 12 en adelante → amexPeriod:"cur". Si no se menciona fecha, usa la fecha de hoy para decidir.
-- "Le compré a [Nombre]" → type:"expense", category:"Compras Familiares", familyMember:"Nombre"
-- "[Nombre] me pagó" → type:"family_payment", familyMember:"Nombre", category:"Reembolso Familiar", method:null
-- salario/quincena/finiquito → type:"income", method:null
-- sin movimiento → transaction:null
-- Montos siempre positivos. Sé muy breve.
-- Categorías válidas: Comida, Restaurante, Supermercado, Gasolina, Transporte, Uber, Entretenimiento, Salud, Gym, Ropa, Hogar, Servicios, Suscripciones, Trabajo, Compras Familiares, Reembolso Familiar, Salario, Finiquito, Otro`;
+- Si mencionan "amex","tarjeta","crédito" → method:"amex"
+- Si mencionan "efectivo","cash" → method:"cash"
+- Si mencionan "transferencia","spei","depósito" → method:"transfer"
+- Si NO mencionan método de pago para un gasto → method:"unknown", needsMethod:true
+- Gastos Amex: si fecha es ANTES del día ${cutDay} del mes actual → amexPeriod:"prev", si es del día ${cutDay} en adelante → amexPeriod:"cur"
+- "Le compré a X" → type:"expense", category:"Compras Familiares", familyMember:"X"
+- "X me pagó" → type:"family_payment", familyMember:"X", category:"Reembolso Familiar"
+- Renta, deudas, pagos programados → pendiente:true si aún no se han pagado
+- salario/quincena/finiquito → type:"income"
+- sin movimiento → transaction:null, needsMethod:false
+- Categorías: Comida,Restaurante,Supermercado,Gasolina,Transporte,Uber,Entretenimiento,Salud,Gym,Ropa,Hogar,Servicios,Suscripciones,Trabajo,Renta,Compras Familiares,Reembolso Familiar,Salario,Finiquito,Otro`;
 }
 
 async function callAI(userMsg){
-  // Build conversation for Gemini
   const contents=[];
-  // Add history (Gemini uses alternating user/model roles)
-  for(let i=0;i<hist.length;i++){
-    contents.push({role:hist[i].role==='assistant'?'model':'user',parts:[{text:hist[i].content}]});
-  }
+  for(let i=0;i<hist.length;i++){contents.push({role:hist[i].role==='assistant'?'model':'user',parts:[{text:hist[i].content}]});}
   contents.push({role:'user',parts:[{text:userMsg}]});
-
-  const res=await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`,
-    {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        system_instruction:{parts:[{text:sysPrompt()}]},
-        contents,
-        generationConfig:{temperature:0.3,maxOutputTokens:500}
-      })
-    }
-  );
+  const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`,{
+    method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({system_instruction:{parts:[{text:sysPrompt()}]},contents,generationConfig:{temperature:0.2,maxOutputTokens:500}})
+  });
   const d=await res.json();
   if(d.error){throw new Error(d.error.message);}
   const raw=d.candidates?.[0]?.content?.parts?.[0]?.text||'{}';
   hist.push({role:'user',content:userMsg});
   hist.push({role:'assistant',content:raw});
   try{return JSON.parse(raw.replace(/```json|```/g,'').trim());}
-  catch{return{message:raw,transaction:null};}
+  catch{return{message:raw,transaction:null,needsMethod:false};}
 }
 
-// ── RENDER ────────────────────────────────────────────────────
+// ── METHOD PICKER ──────────────────────────────────────────────
+function showMethodPicker(tx, botMsgEl){
+  pendingMethodTx=tx;
+  const picker=document.createElement('div');
+  picker.className='method-picker';
+  picker.id='method-picker';
+  picker.innerHTML=`
+    <button class="method-btn amex-btn" onclick="selectMethod('amex')">💳 Amex</button>
+    <button class="method-btn cash-btn" onclick="selectMethod('efectivo')">💵 Efectivo</button>
+    <button class="method-btn" onclick="selectMethodOther()">✏️ Otro</button>
+  `;
+  botMsgEl.querySelector('.bubble').appendChild(picker);
+}
+
+function selectMethod(method){
+  if(!pendingMethodTx)return;
+  const picker=document.getElementById('method-picker');
+  if(picker)picker.remove();
+  const tx={...pendingMethodTx};
+  if(method==='amex'){tx.method='amex';}
+  else if(method==='efectivo'){tx.method='cash';}
+  else{tx.method=method;}
+  pendingMethodTx=null;
+  completeTx(tx);
+  addMsg('user',method==='amex'?'💳 Amex':method==='efectivo'?'💵 Efectivo':method);
+}
+
+function selectMethodOther(){
+  const picker=document.getElementById('method-picker');
+  if(picker)picker.innerHTML='<input id="other-method-input" style="background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:7px 10px;color:var(--text);font-size:13px;outline:none;width:140px;" placeholder="ej: SPEI, débito…" /><button class="method-btn" style="margin-left:6px;" onclick="confirmOtherMethod()">OK</button>';
+  setTimeout(()=>document.getElementById('other-method-input')?.focus(),100);
+}
+
+function confirmOtherMethod(){
+  const val=document.getElementById('other-method-input')?.value?.trim();
+  if(!val)return;
+  selectMethod(val);
+}
+
+function completeTx(tx){
+  const today=new Date().toLocaleDateString('es-MX',{day:'2-digit',month:'short'});
+  // Set amexPeriod based on date if amex
+  if(tx.method==='amex'&&!tx.amexPeriod){
+    const now=new Date();
+    tx.amexPeriod=now.getDate()>=12?'cur':'prev';
+  }
+  txs.unshift({...tx,date:today,id:Date.now()});
+  updateAll();
+  scheduleSave();
+  saveToSheets({...tx,date:today});
+  // Show confirmation
+  addMsg('bot',`✅ Registrado con ${tx.method==='amex'?'💳 Amex':tx.method==='cash'?'💵 Efectivo':'🔄 '+tx.method}`+mkTxHTML(tx));
+}
+
+// ── RENDER ─────────────────────────────────────────────────────
 function fmt(n){return '$'+n.toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2});}
 function initials(n){return n.trim().split(/\s+/).map(w=>w[0]).join('').substring(0,2).toUpperCase();}
 
-function addTx(t){
-  const today=new Date().toLocaleDateString('es-MX',{day:'2-digit',month:'short'});
-  const amexPeriod = t.method==='amex' ? (t.amexPeriod||'cur') : null;
-  txs.unshift({...t,date:today,id:Date.now(),amexPeriod});
-  updateAll();scheduleSave();
+function getMonthTxs(){
+  const now=new Date();
+  const m=now.getMonth();const y=now.getFullYear();
+  const months={ene:0,feb:1,mar:2,abr:3,may:4,jun:5,jul:6,ago:7,sep:8,oct:9,nov:10,dic:11};
+  return txs.filter(t=>{
+    try{const[d,mo]=(t.date||'').split('-');const tx=new Date(y,months[mo?.toLowerCase()]??m,parseInt(d)||1);return tx.getMonth()===m&&tx.getFullYear()===y;}
+    catch{return false;}
+  });
 }
 
 function updateAll(){
-  const inc=txs.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
-  const amexE=txs.filter(t=>t.method==='amex'&&t.type==='expense').reduce((s,t)=>s+t.amount,0);
-  const cashE=txs.filter(t=>t.method==='cash'&&t.type==='expense').reduce((s,t)=>s+t.amount,0);
-  const otherE=txs.filter(t=>t.method==='transfer'&&t.type==='expense').reduce((s,t)=>s+t.amount,0);
-  const bal=inc-amexE-cashE-otherE;
-  const nb=document.getElementById('nav-bal');
-  nb.textContent=fmt(bal);nb.className='nav-bal-val '+(bal>=0?'pos':'neg');
-  const now2 = new Date();
-  const cutDay2 = 12;
-  const months2 = {ene:0,feb:1,mar:2,abr:3,may:4,jun:5,jul:6,ago:7,sep:8,oct:9,nov:10,dic:11};
-  const parseTxDate = (dateStr) => {
-    try {
-      const [d,m] = (dateStr||'').split('-');
-      return new Date(now2.getFullYear(), months2[m?.toLowerCase()]??now2.getMonth(), parseInt(d)||1);
-    } catch { return now2; }
-  };
-  const curPeriodStart2 = new Date(now2.getFullYear(), now2.getMonth(), cutDay2);
-  const amexAllTxs = txs.filter(t=>t.method==='amex'&&t.type==='expense');
-  const amexPrevTxs = amexAllTxs.filter(t=>(t.amexPeriod==='prev')||(t.amexPeriod!=='cur'&&parseTxDate(t.date)<curPeriodStart2));
-  const amexCurTxs = amexAllTxs.filter(t=>(t.amexPeriod==='cur')||(t.amexPeriod!=='prev'&&parseTxDate(t.date)>=curPeriodStart2));
-  const amexPrevTotal = amexPrevTxs.reduce((s,t)=>s+t.amount,0);
-  const amexCurTotal = amexCurTxs.reduce((s,t)=>s+t.amount,0);
+  const now=new Date();
+  const cutDay=12;
+  const months={ene:0,feb:1,mar:2,abr:3,may:4,jun:5,jul:6,ago:7,sep:8,oct:9,nov:10,dic:11};
+  const parseDate=(dateStr)=>{try{const[d,m]=(dateStr||'').split('-');return new Date(now.getFullYear(),months[m?.toLowerCase()]??now.getMonth(),parseInt(d)||1);}catch{return now;}};
+
+  const monthTxs=getMonthTxs();
+  const inc=monthTxs.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
+  const myExp=monthTxs.filter(t=>t.type==='expense'&&t.category!=='Compras Familiares').reduce((s,t)=>s+t.amount,0);
+  const famExp=monthTxs.filter(t=>t.type==='expense'&&t.category==='Compras Familiares').reduce((s,t)=>s+t.amount,0);
+  const compromisos=monthTxs.filter(t=>t.pendiente&&t.type==='expense').reduce((s,t)=>s+t.amount,0);
+
+  const amexPrevTxs=txs.filter(t=>t.method==='amex'&&t.type==='expense'&&t.amexPeriod==='prev');
+  const amexCurTxs=txs.filter(t=>t.method==='amex'&&t.type==='expense'&&t.amexPeriod!=='prev');
+  const amexPrevTotal=amexPrevTxs.reduce((s,t)=>s+t.amount,0);
+  const amexCurTotal=amexCurTxs.reduce((s,t)=>s+t.amount,0);
   const cashTxs=txs.filter(t=>t.method==='cash'&&t.type==='expense');
-  const incTxs=txs.filter(t=>t.type==='income');
-  document.getElementById('r-inc').textContent=fmt(inc);
-  document.getElementById('r-inc-n').textContent=incTxs.length+' conceptos';
-  const rb=document.getElementById('r-bal');
-  rb.textContent=fmt(bal);rb.className='stat-val '+(bal>=0?'green':'red');
+  const cashTotal=cashTxs.reduce((s,t)=>s+t.amount,0);
+  const saldo=inc-myExp-famExp;
 
-  // Amex prev period
-  const prevMonthNames=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-  const prevStart = new Date(now2.getFullYear(), now2.getMonth()-1, cutDay2);
-  const prevEnd = new Date(now2.getFullYear(), now2.getMonth(), cutDay2-1);
-  document.getElementById('r-amex-prev-period').textContent = `(${cutDay2} ${prevMonthNames[prevStart.getMonth()]} – ${cutDay2-1} ${prevMonthNames[prevEnd.getMonth()]})`;
+  // Nav
+  const nb=document.getElementById('nav-bal');
+  nb.textContent=fmt(saldo);nb.className='nav-bal-val '+(saldo>=0?'pos':'neg');
+
+  // Resumen cards
+  document.getElementById('r-inc-mes').textContent=fmt(inc);
+  document.getElementById('r-inc-mes-n').textContent=monthTxs.filter(t=>t.type==='income').length+' conceptos';
+  document.getElementById('r-ego-mes').textContent=fmt(myExp);
+  document.getElementById('r-ego-mes-n').textContent='este mes';
+  document.getElementById('r-fam-mes').textContent=fmt(famExp);
+  document.getElementById('r-comp-mes').textContent=fmt(compromisos);
   document.getElementById('r-amex-prev').textContent=fmt(amexPrevTotal);
-  document.getElementById('r-amex-prev-n').textContent=amexPrevTxs.length+' compras';
-  document.getElementById('r-amex-prev-pay').textContent='Pagar el 30';
-
-  // Amex cur period
-  const curEnd = new Date(now2.getFullYear(), now2.getMonth()+1, cutDay2-1);
-  document.getElementById('r-amex-cur-period').textContent=`(${cutDay2} ${prevMonthNames[now2.getMonth()]} – ${cutDay2-1} ${prevMonthNames[curEnd.getMonth()]})`;
+  document.getElementById('r-amex-prev-lbl').textContent=amexPrevTxs.length+' compras · pago el 30';
   document.getElementById('r-amex-cur').textContent=fmt(amexCurTotal);
-  document.getElementById('r-amex-cur-n').textContent=amexCurTxs.length+' compras';
-  const daysLeft = cutDay2 - 1 + (now2.getDate() >= cutDay2 ? new Date(now2.getFullYear(), now2.getMonth()+1, 0).getDate() - now2.getDate() + cutDay2 - 1 : cutDay2 - 1 - now2.getDate());
-  const realDaysLeft = Math.max(0, now2.getDate() < cutDay2 ? cutDay2 - 1 - now2.getDate() : new Date(now2.getFullYear(), now2.getMonth()+1, 0).getDate() - now2.getDate() + cutDay2 - 1);
-  document.getElementById('r-amex-days').textContent=realDaysLeft;
+  const daysLeft=now.getDate()<cutDay?cutDay-1-now.getDate():new Date(now.getFullYear(),now.getMonth()+1,0).getDate()-now.getDate()+cutDay-1;
+  document.getElementById('r-amex-cur-lbl').textContent=amexCurTxs.length+' compras · '+daysLeft+' días al corte';
+  document.getElementById('r-cash').textContent=fmt(cashTotal);
+  document.getElementById('r-cash-n').textContent=cashTxs.length+' pagos';
+  document.getElementById('r-saldo').textContent=fmt(saldo);
+  const rs=document.getElementById('r-saldo');
+  rs.textContent=fmt(saldo);rs.className='stat-val '+(saldo>=0?'green':'red');
 
-  function buildCats(arr,color,tcls,tlbl){
-    const map={};
-    arr.forEach(t=>{if(!map[t.category])map[t.category]=[];map[t.category].push(t);});
-    const entries=Object.entries(map).sort((a,b)=>b[1].reduce((s,t)=>s+t.amount,0)-a[1].reduce((s,t)=>s+t.amount,0));
-    return entries.length?entries.map(([cat,items])=>{
-      const tot=items.reduce((s,t)=>s+t.amount,0);
-      return `<div class="ditem"><div class="ditem-left"><div class="ditem-desc">${ICONS[cat]||'📦'} ${cat}</div><div class="ditem-meta">${items.length} transacciones · <span class="tag ${tcls}" style="font-size:9px">${tlbl}</span></div></div><div class="ditem-amt" style="color:${color}">${fmt(tot)}</div></div>`;
-    }).join(''):'<div class="empty">Sin registros</div>';
-  }
-  document.getElementById('r-amex-prev-cats').innerHTML=buildCats(amexPrevTxs,'var(--blue)','amex','💳 Corte anterior');
-  document.getElementById('r-amex-cur-cats').innerHTML=buildCats(amexCurTxs,'var(--blue)','amex','💳 Corte en curso');
-  document.getElementById('r-cash-cats').innerHTML=buildCats(cashTxs,'var(--amber)','cash','💵 Efectivo');
+  // Familiares
   const persons={};
   txs.filter(t=>t.familyMember).forEach(t=>{
     const n=t.familyMember;
@@ -471,25 +609,104 @@ function updateAll(){
   const pe=Object.entries(persons);
   if(!pe.length){fp.innerHTML='<div class="empty"><div class="ei">👨‍👩‍👧</div>Escribe "Le compré X a [nombre]" para empezar</div>';return;}
   fp.innerHTML=pe.map(([name,p])=>{
-    const pending=Math.max(0,p.spent-p.paid);
-    const done=pending<0.01;
-    const rows=p.txs.map(t=>{
-      const ip=t.type==='family_payment';
-      return `<div class="ptx"><div><div style="font-size:12px;color:var(--text)">${ip?'✅ Pago recibido':'🛍️ '+t.description}</div><div class="ptx-m">${t.date}${t.method?' · '+(t.method==='amex'?'💳 Amex':t.method==='cash'?'💵 Efectivo':'🔄 Transfer'):''}</div></div><div class="ptx-a" style="color:${ip?'var(--green)':'var(--purple)'}">${ip?'+':'-'}${fmt(t.amount)}</div></div>`;
-    }).join('');
-    return `<div class="person-card"><div class="person-header"><div class="person-info"><div class="person-av">${initials(name)}</div><div><div class="person-name">${name}</div><div class="person-sub">${p.txs.filter(t=>t.type==='expense').length} compras · cobrado ${fmt(p.paid)}</div></div></div><div class="person-bal"><div class="person-bal-label">${done?'Saldado':'Por cobrar'}</div><div class="person-bal-val ${done?'done':'pend'}">${done?'✓ $0':fmt(pending)}</div></div></div><div class="person-txs">${rows}</div></div>`;
+    const pending=Math.max(0,p.spent-p.paid);const done=pending<0.01;
+    const rows=p.txs.map(t=>{const ip=t.type==='family_payment';return`<div class="ptx"><div><div style="font-size:12px;color:var(--text)">${ip?'✅ Pago recibido':'🛍️ '+t.description}</div><div class="ptx-m">${t.date}${t.method?' · '+(t.method==='amex'?'💳 Amex':t.method==='cash'?'💵 Efectivo':'🔄 '+t.method):''}</div></div><div class="ptx-a" style="color:${ip?'var(--green)':'var(--purple)'}">${ip?'+':'-'}${fmt(t.amount)}</div></div>`;}).join('');
+    return`<div class="person-card"><div class="person-header"><div class="person-info"><div class="person-av">${initials(name)}</div><div><div class="person-name">${name}</div><div class="person-sub">${p.txs.filter(t=>t.type==='expense').length} compras · cobrado ${fmt(p.paid)}</div></div></div><div class="person-bal"><div class="person-bal-label">${done?'Saldado':'Por cobrar'}</div><div class="person-bal-val ${done?'done':'pend'}">${done?'✓ $0':fmt(pending)}</div></div></div><div class="person-txs">${rows}</div></div>`;
   }).join('');
 }
 
+// ── DETAIL VIEWS ───────────────────────────────────────────────
+function showDetail(type){
+  const monthTxs=getMonthTxs();
+  document.getElementById('resumen-main').style.display='none';
+  const dv=document.getElementById('detail-view');
+  dv.classList.add('active');
+  const body=document.getElementById('detail-body');
+  const title=document.getElementById('detail-title');
+
+  function buildList(arr, colorFn, signFn, metaFn){
+    if(!arr.length)return'<div class="empty">Sin registros</div>';
+    return arr.map(t=>`<div class="tx-row">
+      <div class="tx-row-left">
+        <div class="tx-row-desc">${ICONS[t.category]||'📦'} ${t.description||t.category}</div>
+        <div class="tx-row-meta">${metaFn(t)}</div>
+      </div>
+      <div class="tx-row-amt" style="color:${colorFn(t)}">${signFn(t)}${fmt(t.amount)}</div>
+    </div>`).join('');
+  }
+
+  if(type==='ingresos'){
+    title.textContent='📈 Ingresos del mes';
+    const arr=monthTxs.filter(t=>t.type==='income');
+    const total=arr.reduce((s,t)=>s+t.amount,0);
+    body.innerHTML=`<div class="total-bar"><span class="total-bar-label">Total ingresos</span><span class="total-bar-val" style="color:var(--green)">${fmt(total)}</span></div>
+    <div class="month-section"><div>${buildList(arr,()=>'var(--green)',()=>'+',t=>`${t.date} · ${t.category}`)}</div></div>`;
+  }
+
+  else if(type==='egresos-mes'){
+    title.textContent='💸 Mis gastos del mes';
+    const arr=monthTxs.filter(t=>t.type==='expense'&&t.category!=='Compras Familiares');
+    const total=arr.reduce((s,t)=>s+t.amount,0);
+    body.innerHTML=`<div class="total-bar"><span class="total-bar-label">Total gastos personales</span><span class="total-bar-val" style="color:var(--red)">${fmt(total)}</span></div>
+    <div class="month-section"><div>${buildList(arr,()=>'var(--red)',()=>'-',t=>`${t.date} · ${t.method==='amex'?'💳 Amex':t.method==='cash'?'💵 Efectivo':'🔄 '+t.method}`)}</div></div>`;
+  }
+
+  else if(type==='fam-mes'){
+    title.textContent='👨‍👩‍👧 Gastos familiares del mes';
+    const arr=monthTxs.filter(t=>t.type==='expense'&&t.category==='Compras Familiares');
+    const total=arr.reduce((s,t)=>s+t.amount,0);
+    body.innerHTML=`<div class="total-bar"><span class="total-bar-label">Total compras familiares</span><span class="total-bar-val" style="color:var(--purple)">${fmt(total)}</span></div>
+    <div class="month-section"><div>${buildList(arr,()=>'var(--purple)',()=>'-',t=>`${t.date} · 👤 ${t.familyMember||'familiar'} · ${t.method==='amex'?'💳 Amex':t.method==='cash'?'💵 Efectivo':'🔄 '+t.method}`)}</div></div>`;
+  }
+
+  else if(type==='compromisos'){
+    title.textContent='📌 Compromisos del mes';
+    const arr=monthTxs.filter(t=>t.pendiente&&t.type==='expense');
+    const total=arr.reduce((s,t)=>s+t.amount,0);
+    body.innerHTML=`<div class="total-bar"><span class="total-bar-label">Total pendiente de pagar</span><span class="total-bar-val" style="color:var(--amber)">${fmt(total)}</span></div>
+    <div class="month-section"><div>${buildList(arr,()=>'var(--amber)',()=>'-',t=>`${t.date} · ${t.category}`)}</div></div>`;
+  }
+
+  else if(type==='amex-prev'){
+    title.textContent='💳 Amex — Corte anterior';
+    const arr=txs.filter(t=>t.method==='amex'&&t.type==='expense'&&t.amexPeriod==='prev');
+    const total=arr.reduce((s,t)=>s+t.amount,0);
+    body.innerHTML=`<div class="total-bar"><span class="total-bar-label">Total corte anterior · Pago el 30</span><span class="total-bar-val" style="color:var(--blue)">${fmt(total)}</span></div>
+    <div class="month-section"><div>${buildList(arr,()=>'var(--blue)',()=>'-',t=>`${t.date} · ${t.category}${t.familyMember?' · 👤 '+t.familyMember:''}`)}</div></div>`;
+  }
+
+  else if(type==='amex-cur'){
+    title.textContent='💳 Amex — Corte en curso';
+    const arr=txs.filter(t=>t.method==='amex'&&t.type==='expense'&&t.amexPeriod!=='prev');
+    const total=arr.reduce((s,t)=>s+t.amount,0);
+    body.innerHTML=`<div class="total-bar"><span class="total-bar-label">Acumulado corte actual</span><span class="total-bar-val" style="color:var(--blue)">${fmt(total)}</span></div>
+    <div class="month-section"><div>${buildList(arr,()=>'var(--blue)',()=>'-',t=>`${t.date} · ${t.category}${t.familyMember?' · 👤 '+t.familyMember:''}`)}</div></div>`;
+  }
+
+  else if(type==='efectivo'){
+    title.textContent='💵 Gastos en Efectivo';
+    const arr=txs.filter(t=>t.method==='cash'&&t.type==='expense');
+    const total=arr.reduce((s,t)=>s+t.amount,0);
+    body.innerHTML=`<div class="total-bar"><span class="total-bar-label">Total efectivo</span><span class="total-bar-val" style="color:var(--amber)">${fmt(total)}</span></div>
+    <div class="month-section"><div>${buildList(arr,()=>'var(--amber)',()=>'-',t=>`${t.date} · ${t.category}${t.familyMember?' · 👤 '+t.familyMember:''}`)}</div></div>`;
+  }
+}
+
+function hideDetail(){
+  document.getElementById('resumen-main').style.display='';
+  document.getElementById('detail-view').classList.remove('active');
+}
+
+// ── CHAT ───────────────────────────────────────────────────────
 function mkTxHTML(t){
-  if(!t||!t.type||!t.amount)return '';
+  if(!t||!t.type||!t.amount)return'';
   const isIn=t.type==='income',isFP=t.type==='family_payment',isFam=t.category==='Compras Familiares';
   const color=isIn||isFP?'var(--green)':isFam?'var(--purple)':'var(--red)';
   const sign=isIn||isFP?'+':'-';
-  const mTag=t.method==='amex'?'<span class="tag amex">💳 Amex</span>':t.method==='cash'?'<span class="tag cash">💵 Efectivo</span>':t.method==='transfer'?'<span class="tag inc">🔄 Transfer</span>':'';
+  const mTag=t.method==='amex'?'<span class="tag amex">💳 Amex</span>':t.method==='cash'?'<span class="tag cash">💵 Efectivo</span>':t.method&&t.method!=='unknown'?`<span class="tag inc">🔄 ${t.method}</span>`:'';
   const cTag=t.category?`<span class="tag cat">${ICONS[t.category]||'📦'} ${t.category}</span>`:'';
   const famTag=t.familyMember?`<span class="tag fam">👤 ${t.familyMember}</span>`:'';
-  return `<div class="tx-card"><div class="tx-left"><div class="tx-desc">${t.description||'Movimiento'}</div><div class="tx-meta">${mTag}${cTag}${famTag}</div></div><div class="tx-amt" style="color:${color}">${sign}${fmt(t.amount)}</div></div>`;
+  return`<div class="tx-card"><div class="tx-left"><div class="tx-desc">${t.description||'Movimiento'}</div><div class="tx-meta">${mTag}${cTag}${famTag}</div></div><div class="tx-amt" style="color:${color}">${sign}${fmt(t.amount)}</div></div>`;
 }
 
 function addMsg(role,html){
@@ -498,7 +715,9 @@ function addMsg(role,html){
   d.className=`msg ${role}`;
   d.innerHTML=`<div class="av ${role==='bot'?'b':'u'}">${role==='bot'?'🤖':'👤'}</div><div class="bubble">${html}</div>`;
   c.appendChild(d);c.scrollTop=c.scrollHeight;
+  return d;
 }
+
 function addTyping(){
   const c=document.getElementById('messages');
   const d=document.createElement('div');
@@ -517,22 +736,48 @@ async function send(){
   try{
     const r=await callAI(txt);
     rmTyping();
-    addMsg('bot',(r.message||'Entendido.')+mkTxHTML(r.transaction));
-    if(r.transaction?.type&&r.transaction?.amount)addTx(r.transaction);
+    const t=r.transaction;
+
+    // Needs method selection
+    if(r.needsMethod&&t&&t.amount){
+      pendingMethodTx=t;
+      const botEl=addMsg('bot',`${r.message||'¿Con qué pagaste?'}`);
+      showMethodPicker(t,botEl);
+      return;
+    }
+
+    // Normal transaction
+    if(t&&t.type&&t.amount&&t.method!=='unknown'){
+      const today=new Date().toLocaleDateString('es-MX',{day:'2-digit',month:'short'});
+      if(t.method==='amex'&&!t.amexPeriod){
+        const now=new Date();
+        t.amexPeriod=now.getDate()>=12?'cur':'prev';
+      }
+      txs.unshift({...t,date:today,id:Date.now()});
+      updateAll();
+      scheduleSave();
+      saveToSheets({...t,date:today});
+      addMsg('bot',(r.message||'Entendido.')+mkTxHTML(t));
+    } else {
+      addMsg('bot',r.message||'Entendido.');
+    }
   }catch(e){
     rmTyping();
-    addMsg('bot','⚠️ '+( e.message||'Error de conexión. Intenta de nuevo.'));
+    addMsg('bot','⚠️ '+(e.message||'Error de conexión. Intenta de nuevo.'));
   }
 }
 
 function qs(t){document.getElementById('inp').value=t;send();}
 function hk(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();}}
 function ar(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,80)+'px';}
+
 function sw(name,el){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   el.classList.add('active');
   document.getElementById('panel-chat').classList.toggle('active',name==='chat');
-  document.getElementById('panel-resumen').classList.toggle('active',name==='resumen');
+  const rp=document.getElementById('panel-resumen');
+  rp.classList.toggle('active',name==='resumen');
+  if(name==='resumen'){hideDetail();}
   document.getElementById('panel-familiares').classList.toggle('active',name==='familiares');
 }
 
